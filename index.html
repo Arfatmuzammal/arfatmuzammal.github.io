@@ -2082,6 +2082,7 @@
       renderHistory();
       refreshDashboard();
       renderCustomers();
+      renderReports();
     }
 
     /***********************
@@ -2204,7 +2205,15 @@
         return true;
       });
 
-      const revenueSales = filtered.filter(x => ['Cash','Card','Mobile','Net Payment'].includes(x.paymentMethod));
+      const revenueSales = filtered.filter(x => {
+    if (['Cash','Card','Mobile','Net Payment'].includes(x.paymentMethod)) {
+      return true;
+    }
+    if (x.paymentMethod === 'Pending Payment' && x.paid === true) {
+      return true;
+    }
+    return false;
+  });
       const revenue = revenueSales.reduce((sum, x) => sum + Number(x.total || 0), 0);
 
       const counts = {};
@@ -2225,7 +2234,15 @@
     function refreshDashboard() {
       const tKey = todayKey();
       const todays = sales.filter(s => new Date(s.date).toISOString().startsWith(tKey));
-      const revenueSales = todays.filter(s => ['Cash','Card','Mobile','Net Payment'].includes(s.paymentMethod));
+     const revenueSales = todays.filter(s => {
+    if (['Cash','Card','Mobile','Net Payment'].includes(s.paymentMethod)) {
+      return true;
+    }
+    if (s.paymentMethod === 'Pending Payment' && s.paid === true) {
+      return true;
+    }
+    return false;
+  });
       const revenue = revenueSales.reduce((sum, s) => sum + Number(s.total || 0), 0);
 
       dailyRevenue.textContent = formatCurrency(revenue);
