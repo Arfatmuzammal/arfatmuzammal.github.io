@@ -2680,25 +2680,35 @@
       }
     }
 
-    async function markAsPaid(saleId) {
+        async function markAsPaid(saleId) {
       const sale = sales.find(s => s.id === saleId);
       if (!sale) return;
       if (sale.paymentMethod !== 'Pending Payment') return;
 
       try {
-        const { error } = await _supabase.from('sales').update({
-          paid: true,
-          paid_at: new Date().toISOString()
-        }).eq('id', saleId);
-        if (error) throw error;
-
+        // Update local array
         sale.paid = true;
-        sale.paidAt = new Date().toISOString();
-
+        
+        // Get current session
+        const session = await getSession();
+        if (session && session.email) {
+          // Update cloud - poora sales array save karo
+          const { error } = await _supabase
+            .from('user_data')
+            .update({ sales: sales })
+            .eq('email', session.email);
+          
+          if (error) throw error;
+        }
+        
+        // Update local storage
+        localStorage.setItem(LS.sales, JSON.stringify(sales));
+        
         renderHistory();
         refreshDashboard();
         renderCustomers();
         renderReports();
+        alert('Payment marked as paid successfully!');
       } catch (err) {
         console.error('Payment update error:', err);
         alert('Failed to mark as paid: ' + err.message);
