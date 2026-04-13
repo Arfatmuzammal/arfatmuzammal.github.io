@@ -3147,40 +3147,142 @@
     /***********************
      * Reset data
      ***********************/
-    function resetAllDataKeepUsers() {
-      if (!confirm('Reset Products, Categories, Sales, and Counters to sample data? (Users remain)')) return;
+        async function resetAllDataKeepUsers() {
+      if (!confirm('Reset Products, Categories, Sales, and Counters to sample data? (Users remain) This will clear cloud data too!')) return;
 
-      localStorage.setItem(LS.categories, JSON.stringify(sampleCategories.slice()));
-      localStorage.setItem(LS.products, JSON.stringify(sampleProducts.slice()));
-      localStorage.setItem(LS.sales, JSON.stringify([]));
-      localStorage.setItem(LS.counters, JSON.stringify({ receipt: 1000, order: 5000 }));
-
-      loadState();
-      cart = [];
-      cartDiscountInput.value = 0;
-
-      populateCategorySelectors();
-      renderProducts();
-      renderSaleProducts();
-      renderCart();
-      renderHistory();
-      renderReports();
-      refreshDashboard();
-      renderCustomers();
-
-      alert('Data reset complete.');
+      try {
+        // Get current session
+        const session = await getSession();
+        
+        if (session && session.user) {
+          // 1. Delete all existing data from tables
+          const { error: delSales } = await _supabase
+            .from('sales')
+            .delete()
+            .eq('user_id', session.user.id);
+          if (delSales) console.error('Sales delete error:', delSales);
+          
+          const { error: delProducts } = await _supabase
+            .from('products')
+            .delete()
+            .eq('user_id', session.user.id);
+          if (delProducts) console.error('Products delete error:', delProducts);
+          
+          const { error: delCategories } = await _supabase
+            .from('categories')
+            .delete()
+            .eq('user_id', session.user.id);
+          if (delCategories) console.error('Categories delete error:', delCategories);
+          
+          const { error: delCounters } = await _supabase
+            .from('counters')
+            .delete()
+            .eq('user_id', session.user.id);
+          if (delCounters) console.error('Counters delete error:', delCounters);
+          
+          // 2. Insert sample categories
+          for (const name of sampleCategories) {
+            await _supabase.from('categories').insert({ 
+              name: name, 
+              user_id: session.user.id 
+            });
+          }
+          
+          // 3. Insert sample products
+          for (const p of sampleProducts) {
+            await _supabase.from('products').insert({
+              name: p.name,
+              brand: p.brand,
+              category: p.category,
+              price: p.price,
+              purchase_price: p.purchasePrice,
+              stock: p.stock,
+              image: p.image,
+              user_id: session.user.id
+            });
+          }
+          
+          // 4. Insert counters
+          await _supabase.from('counters').insert({
+            receipt: 1000,
+            order_counter: 5000,
+            user_id: session.user.id
+          });
+          
+          console.log('Cloud data reset for user:', session.user.email);
+        }
+        
+        // 5. Update local storage
+        localStorage.setItem(LS.categories, JSON.stringify(sampleCategories));
+        localStorage.setItem(LS.products, JSON.stringify(sampleProducts));
+        localStorage.setItem(LS.sales, JSON.stringify([]));
+        localStorage.setItem(LS.counters, JSON.stringify({ receipt: 1000, order: 5000 }));
+        
+        // 6. Reload local state
+        categories = [...sampleCategories];
+        products = [...sampleProducts];
+        sales = [];
+        
+        // 7. Clear cart
+        cart = [];
+        cartDiscountInput.value = 0;
+        
+        // 8. Refresh UI
+        populateCategorySelectors();
+        renderProducts();
+        renderSaleProducts();
+        renderCart();
+        renderHistory();
+        renderReports();
+        refreshDashboard();
+        renderCustomers();
+        
+        alert('Data reset complete!');
+        
+      } catch (err) {
+        console.error('Reset error:', err);
+        alert('Failed to reset data: ' + err.message);
+      }
     }
 
-    function resetSalesOnly() {
-      if (!confirm('Reset dashboard stats? This will clear all sales data.')) return;
-      sales = [];
-      localStorage.setItem(LS.sales, JSON.stringify([]));
-      localStorage.setItem(LS.legacySales, JSON.stringify([]));
-      syncStorage();
-      refreshDashboard();
-      renderHistory();
-      renderReports();
-      renderCustomers();
+        async function resetSalesOnly() {
+      if (!confirm('Reset dashboard stats? This will clear ALL sales data from cloud as well. This cannot be undone!')) return;
+      
+      try {
+        // Clear local array
+        sales = [];
+        
+        // Clear local storage
+        localStorage.setItem(LS.sales, JSON.stringify([]));
+        localStorage.setItem(LS.legacySales, JSON.stringify([]));
+        
+        // Get current session
+        const session = await getSession();
+        
+        if (session && session.user) {
+          // Delete all rows from sales table for this user
+          const { error } = await _supabase
+            .from('sales')
+            .delete()
+            .eq('user_id', session.user.id);
+          
+          if (error) throw error;
+          
+          console.log('Cloud sales data cleared for user:', session.user.id);
+        }
+        
+        // Refresh UI
+        refreshDashboard();
+        renderHistory();
+        renderReports();
+        renderCustomers();
+        
+        alert('All sales data has been reset successfully!');
+        
+      } catch (err) {
+        console.error('Reset error:', err);
+        alert('Failed to reset sales data: ' + err.message);
+      }
     }
 
     /***********************
