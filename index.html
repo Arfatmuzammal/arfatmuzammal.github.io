@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,10 +9,12 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
 
   <script src="https://kit.fontawesome.com/a2d9d6d873.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
     :root {
@@ -44,17 +47,35 @@
       --focus: 0 0 0 4px rgba(255, 107, 203, 0.16);
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body {
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
       min-height: 100vh;
       font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
     }
 
-    a { color: inherit; text-decoration: none; }
-    button, input, select, textarea { font: inherit; }
-    .hidden { display: none !important; }
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    .hidden {
+      display: none !important;
+    }
 
     /* Layout */
     body {
@@ -100,6 +121,7 @@
       flex: 0 0 auto;
       padding: 4px;
     }
+
     .brand-icon {
       width: 44px;
       height: 44px;
@@ -111,12 +133,18 @@
       font-size: 1.1rem;
       flex: 0 0 auto;
     }
+
     .brand h1 {
       font-size: 1.18rem;
       letter-spacing: 0.02em;
       line-height: 1.15;
     }
-    .brand p { font-size: 0.88rem; color: var(--muted); margin-top: 2px; }
+
+    .brand p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
 
     nav {
       display: grid;
@@ -124,9 +152,10 @@
       padding: 6px;
       border-radius: 22px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,0.02);
+      background: rgba(255, 255, 255, 0.02);
       align-content: start;
     }
+
     .nav-link {
       display: flex;
       align-items: center;
@@ -137,10 +166,27 @@
       transition: background .2s ease, transform .2s ease, border-color .2s ease;
       color: var(--text);
     }
-    .nav-link i { width: 18px; text-align: center; color: var(--primary); }
-    [data-theme="dark"] .nav-link i { color: #ff8ad5; }
-    .nav-link:hover { background: var(--primary-soft); transform: translateX(2px); border-color: rgba(124, 92, 255, 0.15); }
-    .nav-link.active { background: var(--primary-soft); border-color: rgba(124, 92, 255, 0.18); }
+
+    .nav-link i {
+      width: 18px;
+      text-align: center;
+      color: var(--primary);
+    }
+
+    [data-theme="dark"] .nav-link i {
+      color: #ff8ad5;
+    }
+
+    .nav-link:hover {
+      background: var(--primary-soft);
+      transform: translateX(2px);
+      border-color: rgba(124, 92, 255, 0.15);
+    }
+
+    .nav-link.active {
+      background: var(--primary-soft);
+      border-color: rgba(124, 92, 255, 0.18);
+    }
 
     .theme-card {
       padding: 16px;
@@ -150,7 +196,14 @@
       display: grid;
       gap: 12px;
     }
-    .theme-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+    .theme-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
     .toggle-switch {
       position: relative;
       width: 52px;
@@ -160,6 +213,7 @@
       cursor: pointer;
       border: none;
     }
+
     .toggle-switch::after {
       content: '';
       position: absolute;
@@ -170,7 +224,10 @@
       background: var(--surface);
       transition: transform 0.25s ease;
     }
-    .toggle-switch.active::after { transform: translateX(24px); }
+
+    .toggle-switch.active::after {
+      transform: translateX(24px);
+    }
 
     .tag {
       display: inline-flex;
@@ -186,9 +243,20 @@
     }
 
     /* Main */
-    .main { display: grid; gap: 22px; min-width: 0; }
-    .section { display: none; gap: 22px; }
-    .section.active { display: grid; }
+    .main {
+      display: grid;
+      gap: 22px;
+      min-width: 0;
+    }
+
+    .section {
+      display: none;
+      gap: 22px;
+    }
+
+    .section.active {
+      display: grid;
+    }
 
     .page-header {
       display: flex;
@@ -197,10 +265,23 @@
       gap: 16px;
       align-items: center;
     }
-    .page-header h2 { font-size: 1.8rem; letter-spacing: -0.04em; }
-    .page-header p { color: var(--muted); margin-top: 6px; }
 
-    .header-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+    .page-header h2 {
+      font-size: 1.8rem;
+      letter-spacing: -0.04em;
+    }
+
+    .page-header p {
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
 
     .button,
     .button-soft {
@@ -215,19 +296,25 @@
       gap: 10px;
       justify-content: center;
     }
+
     .button:hover,
-    .button-soft:hover { transform: translateY(-1px); box-shadow: var(--shadow); }
+    .button-soft:hover {
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
 
     .button {
       background: linear-gradient(135deg, var(--primary), var(--primary2));
       color: #fff;
       box-shadow: 0 18px 35px rgba(124, 92, 255, 0.16);
     }
+
     .button-soft {
       background: var(--surface-strong);
       color: var(--text);
       border: 1px solid var(--border);
     }
+
     .button-danger {
       background: rgba(239, 71, 111, 0.12);
       color: #ef476f;
@@ -243,12 +330,35 @@
       min-width: 0;
     }
 
-    .grid-2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: 20px; align-items: start; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+      gap: 20px;
+      align-items: start;
+    }
 
-    .overview-card { display: grid; gap: 14px; }
-    .overview-card h3 { font-size: .95rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.12em; }
-    .overview-card .value { font-size: 1.9rem; font-weight: 700; }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .overview-card {
+      display: grid;
+      gap: 14px;
+    }
+
+    .overview-card h3 {
+      font-size: .95rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .overview-card .value {
+      font-size: 1.9rem;
+      font-weight: 700;
+    }
 
     .small-badge {
       display: inline-flex;
@@ -262,11 +372,30 @@
       border: 1px solid rgba(239, 71, 111, 0.14);
     }
 
-    .status-chip { padding: 8px 12px; border-radius: 999px; font-size: 0.83rem; font-weight: 600; width: fit-content; border: 1px solid var(--border); }
-    .status-success { background: rgba(43, 191, 126, 0.12); color: #2bbf7e; }
-    .status-danger  { background: rgba(239, 71, 111, 0.12); color: #ef476f; }
+    .status-chip {
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 0.83rem;
+      font-weight: 600;
+      width: fit-content;
+      border: 1px solid var(--border);
+    }
 
-    .list-card { display: grid; gap: 12px; }
+    .status-success {
+      background: rgba(43, 191, 126, 0.12);
+      color: #2bbf7e;
+    }
+
+    .status-danger {
+      background: rgba(239, 71, 111, 0.12);
+      color: #ef476f;
+    }
+
+    .list-card {
+      display: grid;
+      gap: 12px;
+    }
+
     .list-item {
       display: flex;
       justify-content: space-between;
@@ -277,10 +406,22 @@
       border-radius: 20px;
       border: 1px solid var(--border);
     }
-    .list-item .muted { color: var(--muted); font-size: 0.95rem; }
+
+    .list-item .muted {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
 
     /* Inputs */
-    input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="tel"], input[type="date"], input[type="search"], select, textarea {
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="date"],
+    input[type="search"],
+    select,
+    textarea {
       width: 100%;
       padding: 12px 14px;
       border-radius: 16px;
@@ -289,14 +430,49 @@
       color: var(--text);
       outline: none;
     }
-    input:focus, select:focus, textarea:focus { box-shadow: var(--focus); }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      box-shadow: var(--focus);
+    }
 
     /* Tables */
-    .table-wrap { overflow-x: auto; border-radius: 22px; border: 1px solid var(--border); }
-    table { width: 100%; border-collapse: collapse; min-width: 860px; background: var(--surface); }
-    th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: .95rem; }
-    th { color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.82rem; background: var(--surface); position: sticky; top: 0; z-index: 1; }
-    tr:hover td { background: rgba(124,92,255,.05); }
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 22px;
+      border: 1px solid var(--border);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+      background: var(--surface);
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: .95rem;
+    }
+
+    th {
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 0.82rem;
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:hover td {
+      background: rgba(124, 92, 255, .05);
+    }
 
     /* Products */
     .search-bar {
@@ -321,7 +497,10 @@
       overflow: hidden;
     }
 
-    .low-stock { color: #ef476f; font-weight: 700; }
+    .low-stock {
+      color: #ef476f;
+      font-weight: 700;
+    }
 
     /* Dashboard logo area */
     .dash-logo {
@@ -334,6 +513,7 @@
       border: 1px solid var(--border);
       min-width: 240px;
     }
+
     .dash-logo img {
       width: 44px;
       height: 44px;
@@ -343,16 +523,26 @@
       border: 1px solid var(--border);
       padding: 4px;
     }
-    .dash-logo .t1 { font-weight: 700; line-height: 1.1; }
-    .dash-logo .t2 { color: var(--muted); font-size: .9rem; margin-top: 2px; }
+
+    .dash-logo .t1 {
+      font-weight: 700;
+      line-height: 1.1;
+    }
+
+    .dash-logo .t2 {
+      color: var(--muted);
+      font-size: .9rem;
+      margin-top: 2px;
+    }
 
     /* Profile button (top-right dashboard) */
     .profile {
       position: relative;
     }
+
     .profile-btn {
-      display:flex;
-      align-items:center;
+      display: flex;
+      align-items: center;
       gap: 10px;
       padding: 10px 12px;
       border-radius: 18px;
@@ -361,19 +551,24 @@
       cursor: pointer;
       font-weight: 600;
     }
-    .profile-btn:hover { box-shadow: var(--shadow); }
+
+    .profile-btn:hover {
+      box-shadow: var(--shadow);
+    }
+
     .avatar {
       width: 38px;
       height: 38px;
       border-radius: 14px;
       background: linear-gradient(135deg, var(--primary), var(--primary2));
-      display:grid;
-      place-items:center;
+      display: grid;
+      place-items: center;
       color: #fff;
       font-weight: 700;
     }
+
     .profile-menu {
-      position:absolute;
+      position: absolute;
       right: 0;
       top: calc(100% + 10px);
       width: min(320px, calc(100vw - 40px));
@@ -382,13 +577,30 @@
       border-radius: 22px;
       box-shadow: var(--shadow);
       padding: 14px;
-      display:none;
+      display: none;
       z-index: 80;
     }
-    .profile-menu.active { display:block; }
-    .profile-menu .muted { color: var(--muted); }
-    .menu-row { display:flex; justify-content:space-between; gap: 10px; align-items:flex-start; }
-    .menu-actions { display:grid; gap: 10px; margin-top: 12px; }
+
+    .profile-menu.active {
+      display: block;
+    }
+
+    .profile-menu .muted {
+      color: var(--muted);
+    }
+
+    .menu-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .menu-actions {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
 
     /* POS */
     .pos-head {
@@ -399,8 +611,16 @@
       flex-wrap: wrap;
       margin-bottom: 14px;
     }
-    .pos-head h3 { font-size: 1.05rem; }
-    .pos-head .muted { color: var(--muted); margin-top: 4px; font-size: .95rem; }
+
+    .pos-head h3 {
+      font-size: 1.05rem;
+    }
+
+    .pos-head .muted {
+      color: var(--muted);
+      margin-top: 4px;
+      font-size: .95rem;
+    }
 
     .pos-toolbar {
       display: flex;
@@ -409,7 +629,11 @@
       align-items: center;
       justify-content: flex-end;
     }
-    .pos-toolbar input[type="search"] { width: 240px; max-width: 100%; }
+
+    .pos-toolbar input[type="search"] {
+      width: 240px;
+      max-width: 100%;
+    }
 
     .product-card-grid {
       display: grid;
@@ -427,20 +651,63 @@
       transition: transform 0.2s ease, box-shadow 0.2s ease;
       min-width: 0;
     }
-    .product-card:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-    .product-card h4 { font-size: 1rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .product-card .price { font-weight: 700; }
-    .stock-pill {
-      display:inline-flex; padding: 6px 10px; border-radius: 999px; border:1px solid var(--border);
-      background: var(--surface-strong); color: var(--muted); font-size: .82rem; width: fit-content;
+
+    .product-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow);
     }
-    .stock-low { background: rgba(239,71,111,.12); color:#ef476f; border-color: rgba(239,71,111,.22); }
 
-    .p-row { display:flex; gap: 10px; align-items:center; min-width:0; }
-    .p-row .p-info { min-width:0; }
+    .product-card h4 {
+      font-size: 1rem;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
 
-    .qty-row { display:flex; gap:10px; align-items:center; }
-    .qty-row input[type="number"] { width: 88px; padding: 10px 10px; border-radius: 14px; }
+    .product-card .price {
+      font-weight: 700;
+    }
+
+    .stock-pill {
+      display: inline-flex;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-strong);
+      color: var(--muted);
+      font-size: .82rem;
+      width: fit-content;
+    }
+
+    .stock-low {
+      background: rgba(239, 71, 111, .12);
+      color: #ef476f;
+      border-color: rgba(239, 71, 111, .22);
+    }
+
+    .p-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .p-row .p-info {
+      min-width: 0;
+    }
+
+    .qty-row {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .qty-row input[type="number"] {
+      width: 88px;
+      padding: 10px 10px;
+      border-radius: 14px;
+    }
 
     .cart-panel {
       display: grid;
@@ -474,11 +741,16 @@
       border: 1px solid var(--border);
     }
 
-    .cart-item .left strong { display:block; }
-    .cart-item .left small { color: var(--muted); }
+    .cart-item .left strong {
+      display: block;
+    }
+
+    .cart-item .left small {
+      color: var(--muted);
+    }
 
     .cart-item .right {
-      display:flex;
+      display: flex;
       flex-direction: column;
       gap: 8px;
       align-items: flex-end;
@@ -486,25 +758,37 @@
     }
 
     .qty-ctrl {
-      display:flex; gap: 8px; align-items:center;
+      display: flex;
+      gap: 8px;
+      align-items: center;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 999px;
       padding: 6px 8px;
     }
+
     .qty-ctrl button {
-      border:none;
+      border: none;
       background: transparent;
       cursor: pointer;
-      width: 28px; height: 28px;
+      width: 28px;
+      height: 28px;
       border-radius: 999px;
       color: var(--text);
     }
-    .qty-ctrl button:hover { background: rgba(124,92,255,.10); }
-    .qty-ctrl span { min-width: 18px; text-align:center; font-weight: 700; }
+
+    .qty-ctrl button:hover {
+      background: rgba(124, 92, 255, .10);
+    }
+
+    .qty-ctrl span {
+      min-width: 18px;
+      text-align: center;
+      font-weight: 700;
+    }
 
     .remove-btn {
-      border:none;
+      border: none;
       background: transparent;
       cursor: pointer;
       color: var(--danger);
@@ -512,32 +796,43 @@
       padding: 6px 8px;
       border-radius: 12px;
     }
-    .remove-btn:hover { background: rgba(239,71,111,.10); }
+
+    .remove-btn:hover {
+      background: rgba(239, 71, 111, .10);
+    }
 
     .summary {
-      display:grid;
+      display: grid;
       gap: 10px;
       padding-top: 10px;
       border-top: 1px solid var(--border);
     }
 
     .summary-row {
-      display:flex;
+      display: flex;
       justify-content: space-between;
       gap: 12px;
       align-items: center;
       font-weight: 600;
     }
-    .summary-row .muted { color: var(--muted); font-weight: 500; }
+
+    .summary-row .muted {
+      color: var(--muted);
+      font-weight: 500;
+    }
 
     .summary-grid {
-      display:grid;
+      display: grid;
       gap: 10px;
       grid-template-columns: 1fr 1fr;
       margin-top: 8px;
     }
 
-    .field { display:grid; gap: 8px; }
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
     .label {
       text-transform: uppercase;
       font-size: 0.78rem;
@@ -546,10 +841,16 @@
       font-weight: 600;
     }
 
-    .pending-hint { color: var(--danger); font-size: .9rem; }
+    .pending-hint {
+      color: var(--danger);
+      font-size: .9rem;
+    }
 
     /* Autocomplete */
-    .autocomplete { position: relative; }
+    .autocomplete {
+      position: relative;
+    }
+
     .ac-list {
       position: absolute;
       top: calc(100% + 8px);
@@ -565,12 +866,32 @@
       overflow-y: auto;
       z-index: 60;
     }
-    .ac-list.active { display: block; }
-    .ac-item { padding: 12px 14px; border-bottom: 1px solid var(--border); cursor: pointer; }
-    .ac-item:last-child { border-bottom: none; }
-    .ac-item:hover { background: var(--primary-soft); }
-    .ac-item strong { display:block; }
-    .ac-item small { color: var(--muted); }
+
+    .ac-list.active {
+      display: block;
+    }
+
+    .ac-item {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+
+    .ac-item:last-child {
+      border-bottom: none;
+    }
+
+    .ac-item:hover {
+      background: var(--primary-soft);
+    }
+
+    .ac-item strong {
+      display: block;
+    }
+
+    .ac-item small {
+      color: var(--muted);
+    }
 
     /* Modals */
     .modal {
@@ -583,7 +904,10 @@
       z-index: 50;
       padding: 24px;
     }
-    .modal.active { display: grid; }
+
+    .modal.active {
+      display: grid;
+    }
 
     .modal-card {
       width: min(940px, 100%);
@@ -596,6 +920,7 @@
       box-shadow: var(--shadow);
       position: relative;
     }
+
     .modal-close {
       position: absolute;
       top: 16px;
@@ -608,7 +933,10 @@
       padding: 10px;
       border-radius: 12px;
     }
-    .modal-close:hover { background: rgba(124,92,255,.10); }
+
+    .modal-close:hover {
+      background: rgba(124, 92, 255, .10);
+    }
 
     .product-form {
       display: grid;
@@ -616,54 +944,158 @@
       grid-template-columns: repeat(2, minmax(0, 1fr));
       margin-top: 16px;
     }
-    .product-form .full-width { grid-column: 1 / -1; }
-    .form-actions { display:flex; justify-content:flex-end; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
 
-    .category-list { display: grid; gap: 12px; margin-top: 16px; max-height: 320px; overflow-y: auto; }
+    .product-form .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .category-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 16px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+
     .category-row {
-      display:flex; align-items:center; justify-content:space-between;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 12px;
       padding: 14px 14px;
       border-radius: 18px;
       background: var(--surface-strong);
       border: 1px solid var(--border);
     }
+
     .category-row button {
-      border:none; background: transparent; cursor: pointer; color: var(--muted);
-      display:inline-flex; align-items:center; gap: 8px; padding: 8px 10px; border-radius: 12px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 12px;
     }
-    .category-row button:hover { color: var(--text); background: rgba(124,92,255,.10); }
+
+    .category-row button:hover {
+      color: var(--text);
+      background: rgba(124, 92, 255, .10);
+    }
 
     /* Auth */
-    .auth-grid { display:grid; grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
-    .auth-tabs { display:flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
-    .auth-tabs .button-soft.active { border-color: rgba(124,92,255,.30); background: rgba(124,92,255,.12); }
-    .auth-note { color: var(--muted); font-size: .92rem; margin-top: 10px; }
+    .auth-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .auth-tabs {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .auth-tabs .button-soft.active {
+      border-color: rgba(124, 92, 255, .30);
+      background: rgba(124, 92, 255, .12);
+    }
+
+    .auth-note {
+      color: var(--muted);
+      font-size: .92rem;
+      margin-top: 10px;
+    }
 
     /* Responsive */
     @media (max-width: 1200px) {
-      body { grid-template-columns: 1fr; padding: 16px; }
-      .sidebar { position: relative; top: 0; min-height: auto; }
-      .cart-panel { position: relative; top: 0; }
+      body {
+        grid-template-columns: 1fr;
+        padding: 16px;
+      }
+
+      .sidebar {
+        position: relative;
+        top: 0;
+        min-height: auto;
+      }
+
+      .cart-panel {
+        position: relative;
+        top: 0;
+      }
     }
 
     @media (max-width: 1100px) {
-      .grid-2 { grid-template-columns: 1fr; }
-      .grid-3 { grid-template-columns: 1fr; }
-      .search-bar { grid-template-columns: 1fr; }
-      table { min-width: 760px; }
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .search-bar {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        min-width: 760px;
+      }
     }
 
     @media (max-width: 700px) {
-      .product-form { grid-template-columns: 1fr; }
-      .product-card-grid { grid-template-columns: 1fr; }
-      .summary-row { flex-direction: column; align-items: stretch; }
-      .summary-grid { grid-template-columns: 1fr; }
-      .cart-item { grid-template-columns: 1fr; }
-      .cart-item .right { align-items: stretch; min-width: 0; }
-      .dash-logo { width: 100%; }
-      .profile-btn { width: 100%; justify-content: space-between; }
-      .profile-menu { left: 0; right: 0; }
+      .product-form {
+        grid-template-columns: 1fr;
+      }
+
+      .product-card-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .summary-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .cart-item {
+        grid-template-columns: 1fr;
+      }
+
+      .cart-item .right {
+        align-items: stretch;
+        min-width: 0;
+      }
+
+      .dash-logo {
+        width: 100%;
+      }
+
+      .profile-btn {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .profile-menu {
+        left: 0;
+        right: 0;
+      }
     }
   </style>
 </head>
@@ -675,9 +1107,9 @@
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;">
         <div>
           <h2 style="font-size:1.6rem;">Welcome to AA Traders</h2>
-          <p class="muted" style="margin-top:8px;">Login or create an account to access the dashboard (stored locally in this browser).</p>
+          <p class="muted" style="margin-top:8px;">Login or create an account to access your cloud dashboard.</p>
         </div>
-        <span class="tag"><i class="fas fa-lock"></i> Offline Auth</span>
+        <span class="tag"><i class="fas fa-cloud"></i> Cloud Auth</span>
       </div>
 
       <div class="auth-tabs">
@@ -695,7 +1127,8 @@
             </div>
             <div class="field">
               <span class="label">Password</span>
-              <input id="loginPassword" type="password" required placeholder="••••••••" autocomplete="current-password" />
+              <input id="loginPassword" type="password" required placeholder="••••••••"
+                autocomplete="current-password" />
             </div>
           </div>
           <div class="form-actions">
@@ -712,11 +1145,13 @@
             </div>
             <div class="field">
               <span class="label">Password</span>
-              <input id="signupPassword" type="password" required placeholder="At least 6 characters" autocomplete="new-password" />
+              <input id="signupPassword" type="password" required placeholder="At least 6 characters"
+                autocomplete="new-password" />
             </div>
             <div class="field">
               <span class="label">Confirm Password</span>
-              <input id="signupPassword2" type="password" required placeholder="Repeat password" autocomplete="new-password" />
+              <input id="signupPassword2" type="password" required placeholder="Repeat password"
+                autocomplete="new-password" />
             </div>
           </div>
           <div class="form-actions">
@@ -725,7 +1160,7 @@
         </form>
 
         <div class="auth-note">
-          Passwords are stored as SHA-256 hash with per-user salt (local only). Avoid using a password you use elsewhere.
+          Your data is securely stored in your private cloud database.
         </div>
       </div>
     </div>
@@ -734,7 +1169,7 @@
   <aside class="sidebar hidden" id="sidebar" aria-hidden="true">
     <div class="brand">
       <img src="logo.png" alt="AA Traders logo" class="brand-logo"
-           onerror="this.style.display='none'; document.getElementById('fallbackIcon').style.display='grid';" />
+        onerror="this.style.display='none'; document.getElementById('fallbackIcon').style.display='grid';" />
       <div class="brand-icon" id="fallbackIcon" style="display:none;"><i class="fas fa-store"></i></div>
       <div>
         <h1>AA Traders</h1>
@@ -791,7 +1226,9 @@
               <div class="avatar" id="profileAvatar">AA</div>
               <div style="text-align:left; min-width: 0;">
                 <div style="font-weight:700; line-height:1.1;" id="profileName">User</div>
-                <div style="color:var(--muted); font-size:.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" id="profileEmail">—</div>
+                <div
+                  style="color:var(--muted); font-size:.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
+                  id="profileEmail">—</div>
               </div>
               <i class="fas fa-chevron-down" style="color:var(--muted);"></i>
             </button>
@@ -808,7 +1245,8 @@
               <div class="menu-actions">
                 <button class="button-soft" id="exportDataBtn"><i class="fas fa-file-excel"></i> Export Data</button>
                 <button class="button-soft" id="resetAllDataBtn"><i class="fas fa-broom"></i> Reset Data</button>
-                <button class="button-soft button-danger" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                <button class="button-soft button-danger" id="logoutBtn"><i class="fas fa-sign-out-alt"></i>
+                  Logout</button>
               </div>
             </div>
           </div>
@@ -960,7 +1398,8 @@
               <input id="cartDiscount" type="number" min="0" max="100" value="0" style="max-width:120px;" />
             </div>
             <!-- Tax REMOVED completely (requested) -->
-            <div class="summary-row" style="font-size:1.05rem;"><strong>Total</strong><strong id="cartTotal">PKR 0</strong></div>
+            <div class="summary-row" style="font-size:1.05rem;"><strong>Total</strong><strong id="cartTotal">PKR
+                0</strong></div>
 
             <div class="summary-grid">
               <div class="field">
@@ -1028,7 +1467,8 @@
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;">
               <button class="button-soft" id="useCustomerBtn" disabled><i class="fas fa-cart-plus"></i> Use</button>
-              <button class="button-soft button-danger" id="removeCustomerBtn" disabled><i class="fas fa-user-times"></i> Remove</button>
+              <button class="button-soft button-danger" id="removeCustomerBtn" disabled><i
+                  class="fas fa-user-times"></i> Remove</button>
             </div>
           </div>
 
@@ -1104,7 +1544,8 @@
         </div>
 
         <div class="muted" style="margin-top:14px;">
-          Revenue includes: Cash, Card, Mobile, Net Payment. Pending Payment does not count as revenue until marked paid.
+          Revenue includes: Cash, Card, Mobile, Net Payment. Pending Payment does not count as revenue until marked
+          paid.
         </div>
       </div>
     </section>
@@ -1153,7 +1594,8 @@
         <div class="field full-width">
           <span class="label">Product image (optional)</span>
           <input id="productImage" type="file" accept="image/*" />
-          <div id="imagePreview" style="margin-top:10px; width:52px; height:52px; border:1px solid var(--border); border-radius:12px; overflow:hidden; display:none;">
+          <div id="imagePreview"
+            style="margin-top:10px; width:52px; height:52px; border:1px solid var(--border); border-radius:12px; overflow:hidden; display:none;">
             <img id="previewImg" style="width:100%; height:100%; object-fit:cover;" />
           </div>
         </div>
@@ -1246,20 +1688,25 @@
 
   <script>
     /***********************
-     * Storage keys
+     * Supabase & Storage
      ***********************/
+    // PRODUCTION CONFIG: Replace with your details from Supabase Dashboard
+    const CONFIG = {
+      URL: 'https://ddvmwapwnpshhrjagsjt.supabase.co',
+      KEY: 'sb_publishable_4ttBXS0TXU8QlE3J7_QbDA_-oN0hsRf'
+    };
+
+    const _supabase = supabase.createClient(CONFIG.URL, CONFIG.KEY);
+
     const LS = {
       theme: 'aat_theme_v1',
-      users: 'aat_users_v1',
+      // We keep these for migration detection
+      legacyUsers: 'aat_users_v1',
       session: 'aat_session_v1',
       products: 'aat_products_v1',
       sales: 'aat_sales_v1',
       categories: 'aat_categories_v1',
-      counters: 'aat_counters_v1',
-      legacyTheme: 'cosmeticPosTheme',
-      legacyProducts: 'cosmeticPosProducts',
-      legacySales: 'cosmeticPosSales',
-      legacyCategories: 'cosmeticPosCategories'
+      counters: 'aat_counters_v1'
     };
 
     const LOW_STOCK_THRESHOLD = 5;
@@ -1471,7 +1918,7 @@
       navLinks.forEach(link => link.classList.toggle('active', link.dataset.section === sectionId));
       customerACList.classList.remove('active');
       profileMenu.classList.remove('active');
-      profileBtn.setAttribute('aria-expanded','false');
+      profileBtn.setAttribute('aria-expanded', 'false');
     }
 
     function calcCartTotals() {
@@ -1488,43 +1935,33 @@
     }
 
     /***********************
-     * Auth
+     * Auth (Supabase)
      ***********************/
-    async function sha256Hex(str) {
-      const enc = new TextEncoder().encode(str);
-      const buf = await crypto.subtle.digest('SHA-256', enc);
-      return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
-    }
-
-    function getUsers() { return JSON.parse(localStorage.getItem(LS.users) || '[]'); }
-
     async function registerUser(email, password) {
       email = normalizeText(email);
-      const users = getUsers();
-      if (users.some(u => u.email === email)) throw new Error('User already exists.');
-      const salt = crypto.randomUUID();
-      const hash = await sha256Hex(`${salt}:${password}`);
-      users.push({ id: crypto.randomUUID(), email, salt, hash, createdAt: new Date().toISOString() });
-      localStorage.setItem(LS.users, JSON.stringify(users));
+      const { data, error } = await _supabase.auth.signUp({ email, password });
+      if (error) throw error;
+      return data.user;
     }
 
     async function loginUser(email, password) {
       email = normalizeText(email);
-      const users = getUsers();
-      const user = users.find(u => u.email === email);
-      if (!user) throw new Error('Invalid email or password.');
-      const hash = await sha256Hex(`${user.salt}:${password}`);
-      if (hash !== user.hash) throw new Error('Invalid email or password.');
-      localStorage.setItem(LS.session, JSON.stringify({ userId: user.id, email: user.email, loginAt: new Date().toISOString() }));
-      return user;
+      const { data, error } = await _supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      return data.user;
     }
 
-    function getSession() {
-      const s = JSON.parse(localStorage.getItem(LS.session) || 'null');
-      return s && s.email ? s : null;
+    async function getSession() {
+      const { data, error } = await _supabase.auth.getSession();
+      if (error) return null;
+      return data.session;
     }
 
-    function logout() { localStorage.removeItem(LS.session); location.reload(); }
+    async function logout() {
+      await _supabase.auth.signOut();
+      localStorage.removeItem(LS.session); // cleanup old session if any
+      location.reload();
+    }
 
     function setAuthTab(tab) {
       const isLogin = tab === 'login';
@@ -1534,9 +1971,9 @@
       authTabSignup.classList.toggle('active', !isLogin);
     }
 
-    function gateApp() {
-      const sess = getSession();
-      if (!sess) {
+    async function gateApp() {
+      const session = await getSession();
+      if (!session) {
         openModal(authModal);
         sidebar.setAttribute('aria-hidden', 'true');
         appMain.setAttribute('aria-hidden', 'true');
@@ -1545,6 +1982,7 @@
         profileEmail.textContent = '—';
         menuEmail.textContent = '—';
       } else {
+        const user = session.user;
         closeModal(authModal);
         sidebar.setAttribute('aria-hidden', 'false');
         appMain.setAttribute('aria-hidden', 'false');
@@ -1552,14 +1990,16 @@
         appMain.classList.remove('hidden');
 
         // Profile UI
-        profileEmail.textContent = sess.email;
-        menuEmail.textContent = sess.email;
+        profileEmail.textContent = user.email;
+        menuEmail.textContent = user.email;
 
-        const initials = (sess.email || 'AA').slice(0,2).toUpperCase();
+        const initials = (user.email || 'AA').slice(0, 2).toUpperCase();
         profileAvatar.textContent = initials;
-
-        const name = (sess.email || 'User').split('@')[0] || 'User';
+        const name = (user.email || 'User').split('@')[0] || 'User';
         profileName.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+
+        // Load data for this user
+        await loadState();
       }
     }
 
@@ -1585,12 +2025,16 @@
     }
 
     /***********************
-     * Load state
+     * Load state (Supabase)
      ***********************/
-    function loadCategories() {
-      const saved = localStorage.getItem(LS.categories);
-      categories = saved ? JSON.parse(saved) : sampleCategories.slice();
-      if (!Array.isArray(categories) || !categories.length) categories = sampleCategories.slice();
+    async function loadCategories() {
+      const { data, error } = await _supabase.from('categories').select('name');
+      if (error) {
+        console.error('Error loading categories:', error);
+        categories = sampleCategories.slice();
+      } else {
+        categories = data.length ? data.map(d => d.name) : sampleCategories.slice();
+      }
     }
 
     function populateCategorySelectors() {
@@ -1600,53 +2044,102 @@
       productCategorySelect.innerHTML = categories.map(c => `<option value="${c}">${c}</option>`).join('');
     }
 
-    function loadState() {
-      migrateLegacyIfNeeded();
-
+    async function loadState() {
       const theme = localStorage.getItem(LS.theme) || 'light';
       setTheme(theme);
 
-      loadCategories();
+      await loadCategories();
       populateCategorySelectors();
 
-      const savedProducts = localStorage.getItem(LS.products);
-      products = savedProducts ? JSON.parse(savedProducts) : sampleProducts.slice();
-      products = (products || []).map(p => ({
-        id: p.id || crypto.randomUUID(),
-        name: p.name || '',
-        brand: p.brand || '',
-        category: p.category || (categories[0] || 'Other'),
+      // Load Products
+      const { data: pData, error: pError } = await _supabase.from('products').select('*');
+      if (pError) console.error('Error loading products:', pError);
+      products = (pData || []).map(p => ({
+        id: p.id,
+        name: p.name,
+        brand: p.brand,
+        category: p.category,
         price: Number(p.price || 0),
-        purchasePrice: Number(p.purchasePrice || 0),
+        purchasePrice: Number(p.purchase_price || 0),
         stock: Number(p.stock || 0),
         image: p.image || ''
       }));
 
-      const savedSales = localStorage.getItem(LS.sales);
-      sales = savedSales ? JSON.parse(savedSales) : [];
-      sales = (sales || []).map(s => ({
-        id: s.id || crypto.randomUUID(),
-        date: s.date || new Date().toISOString(),
-        items: (s.items || []).map(it => ({
-          productId: it.productId || it.id || '',
-          name: it.name || '',
-          brand: it.brand || '',
-          price: Number(it.price || 0),
-          quantity: Number(it.quantity || 0),
-          lineTotal: Number(it.lineTotal || (Number(it.price||0) * Number(it.quantity||0)))
-        })),
+      // Fallback if empty and first time
+      if (!products.length && !pError) {
+        // Option to import from localstorage or load samples
+        const local = localStorage.getItem(LS.products);
+        if (local) {
+          if (confirm('Find local product data. Would you like to import it to the cloud?')) {
+            await importFromLocalStorage();
+            return;
+          }
+        }
+        products = sampleProducts.slice();
+      }
+
+      // Load Sales
+      const { data: sData, error: sError } = await _supabase.from('sales').select('*').order('date', { ascending: false });
+      if (sError) console.error('Error loading sales:', sError);
+      sales = (sData || []).map(s => ({
+        id: s.id,
+        date: s.date,
+        items: s.items,
         subtotal: Number(s.subtotal || 0),
-        discountRate: Number(s.discountRate || 0),
+        discountRate: Number(s.discount_rate || 0),
         total: Number(s.total || 0),
-        paymentMethod: s.paymentMethod || 'Cash',
-        paid: typeof s.paid === 'boolean' ? s.paid : (s.paymentMethod !== 'Pending Payment'),
-        customer: s.customer || { name: '', phone: '', address: '' },
-        receiptNumber: s.receiptNumber ?? null,
-        orderNumber: s.orderNumber ?? null
+        paymentMethod: s.payment_method,
+        paid: s.paid,
+        customer: s.customer,
+        receiptNumber: s.receipt_number,
+        orderNumber: s.order_number
       }));
 
-      getCounters();
-      syncStorage();
+      // Load Counters
+      const { data: cData } = await _supabase.from('counters').select('*').single();
+      if (cData) {
+        localStorage.setItem(LS.counters, JSON.stringify({ receipt: cData.receipt, order: cData.order_counter }));
+      }
+
+      refreshDashboard();
+      renderProducts();
+      renderSaleProducts();
+      renderHistory();
+    }
+
+    async function importFromLocalStorage() {
+      const p = JSON.parse(localStorage.getItem(LS.products) || '[]');
+      const c = JSON.parse(localStorage.getItem(LS.categories) || '[]');
+      const s = JSON.parse(localStorage.getItem(LS.sales) || '[]');
+
+      const user = (await _supabase.auth.getUser()).data.user;
+      if (!user) return;
+
+      if (c.length) {
+        await _supabase.from('categories').insert(c.map(name => ({ name, user_id: user.id })));
+      }
+      if (p.length) {
+        await _supabase.from('products').insert(p.map(x => ({
+          name: x.name, brand: x.brand, category: x.category,
+          purchase_price: x.purchasePrice, price: x.price,
+          stock: x.stock, image: x.image, user_id: user.id
+        })));
+      }
+      if (s.length) {
+        await _supabase.from('sales').insert(s.map(x => ({
+          date: x.date, items: x.items, subtotal: x.subtotal,
+          discount_rate: x.discountRate, total: x.total,
+          payment_method: x.paymentMethod, paid: x.paid,
+          customer: x.customer, receipt_number: x.receiptNumber,
+          order_number: x.orderNumber, user_id: user.id
+        })));
+      }
+      location.reload();
+    }
+
+    async function syncStorage() {
+      // In Supabase, we usually sync individual items, 
+      // but for theme/local small things we keep localStorage
     }
 
     /***********************
@@ -1691,39 +2184,54 @@
       openModal(categoryModal);
     }
 
-    function saveCategory(event) {
+    async function saveCategory(event) {
       event.preventDefault();
       const name = newCategoryInput.value.trim();
       if (!name) return alert('Enter a category name.');
 
       const duplicate = categories.find(cat => cat.toLowerCase() === name.toLowerCase());
-      if (editingCategory) {
-        if (duplicate && duplicate !== editingCategory) return alert('This category already exists.');
-        categories = categories.map(cat => cat === editingCategory ? name : cat);
-        products = products.map(p => ({ ...p, category: p.category === editingCategory ? name : p.category }));
-        editingCategory = null;
-      } else {
-        if (duplicate) return alert('This category already exists.');
-        categories.push(name);
-      }
+      const session = await getSession();
+      if (!session) return alert('Please login to save categories.');
 
-      categories.sort((a,b)=>a.localeCompare(b));
-      populateCategorySelectors();
-      syncStorage();
-      renderCategoryList();
-      renderProducts();
-      renderSaleProducts();
-      newCategoryInput.value = '';
-      saveCategoryBtn.innerHTML = `<i class="fas fa-plus"></i> Add Category`;
+      try {
+        if (editingCategory) {
+          if (duplicate && duplicate !== editingCategory) return alert('This category already exists.');
+          const { error } = await _supabase.from('categories').update({ name }).eq('name', editingCategory);
+          if (error) throw error;
+
+          categories = categories.map(cat => cat === editingCategory ? name : cat);
+          products = products.map(p => ({ ...p, category: p.category === editingCategory ? name : p.category }));
+          editingCategory = null;
+        } else {
+          if (duplicate) return alert('This category already exists.');
+          const { error } = await _supabase.from('categories').insert({ name, user_id: session.user.id });
+          if (error) throw error;
+          categories.push(name);
+        }
+
+        categories.sort((a, b) => a.localeCompare(b));
+        populateCategorySelectors();
+        renderCategoryList();
+        renderProducts();
+        renderSaleProducts();
+        newCategoryInput.value = '';
+        saveCategoryBtn.innerHTML = `<i class="fas fa-plus"></i> Add Category`;
+      } catch (err) {
+        console.error('Category error:', err);
+        alert('Failed to save category: ' + err.message);
+      }
     }
 
-    function deleteCategoryOption(category) {
+    async function deleteCategoryOption(category) {
       const usedBy = products.some(product => product.category === category);
       if (usedBy) return alert('Cannot remove category used by products.');
       if (!confirm(`Remove category "${category}"?`)) return;
+
+      const { error } = await _supabase.from('categories').delete().eq('name', category);
+      if (error) return alert('Failed to delete: ' + error.message);
+
       categories = categories.filter(c => c !== category);
       populateCategorySelectors();
-      syncStorage();
       renderCategoryList();
       renderProducts();
       renderSaleProducts();
@@ -1875,34 +2383,89 @@
       }
     }
 
-    function saveProductData(name, brand, category, purchasePrice, salePrice, stock, image) {
-      if (editingProductId) {
-        const p = products.find(x => x.id === editingProductId);
-        if (!p) return;
-        p.name = name;
-        p.brand = brand;
-        p.category = category;
-        p.purchasePrice = purchasePrice;
-        p.price = salePrice;
-        p.stock = stock;
-        p.image = image || '';
-      } else {
-        products.push({ id: crypto.randomUUID(), name, brand, category, purchasePrice, price: salePrice, stock, image: image || '' });
-      }
+    async function saveProductData(name, brand, category, purchasePrice, salePrice, stock, image) {
+      const session = await getSession();
+      if (!session) return alert('Login required.');
 
-      syncStorage();
-      closeProductForm();
-      renderProducts();
-      renderSaleProducts();
-      refreshDashboard();
+      try {
+        const productObj = {
+          name, brand, category,
+          purchase_price: purchasePrice,
+          price: salePrice,
+          stock, image,
+          user_id: session.user.id
+        };
+
+        if (editingProductId) {
+          // Attempt update
+          const { data, error, count } = await _supabase
+            .from('products')
+            .update(productObj)
+            .eq('id', editingProductId)
+            .select();
+
+          if (error) throw error;
+
+          // If no row was updated, it might be a sample product not yet in the DB
+          if (!data || data.length === 0) {
+            console.log('Product not found in DB, attempting insert...');
+            const { data: newData, error: insertErr } = await _supabase
+              .from('products')
+              .insert(productObj)
+              .select()
+              .single();
+            
+            if (insertErr) throw insertErr;
+            
+            // Update local memory with the new DB record (has the new ID)
+            const idx = products.findIndex(x => x.id === editingProductId);
+            const savedProd = {
+              id: newData.id,
+              name, brand, category,
+              purchasePrice, price: salePrice,
+              stock, image
+            };
+            if (idx !== -1) products[idx] = savedProd;
+            else products.push(savedProd);
+          } else {
+            // Update local state for existing product
+            const p = products.find(x => x.id === editingProductId);
+            if (p) {
+              Object.assign(p, { name, brand, category, purchasePrice, price: salePrice, stock, image });
+            }
+          }
+        } else {
+          // Normal insert for new products
+          const { data, error } = await _supabase.from('products').insert(productObj).select().single();
+          if (error) throw error;
+          products.push({
+            id: data.id,
+            name, brand, category,
+            purchasePrice, price: salePrice,
+            stock, image
+          });
+        }
+
+        closeProductForm();
+        renderProducts();
+        renderSaleProducts();
+        refreshDashboard();
+        alert('Product saved successfully!');
+      } catch (err) {
+        console.error('Product save error:', err);
+        alert('Error saving product: ' + (err.message || 'Unknown error'));
+      }
     }
 
     function editProduct(id) { openProductModal(id); }
 
-    function deleteProduct(id) {
+    async function deleteProduct(id) {
       if (!confirm('Delete this product from inventory?')) return;
+
+      const { error } = await _supabase.from('products').delete().eq('id', id);
+      if (error) return alert('Delete failed: ' + error.message);
+
       products = products.filter(p => p.id !== id);
-      syncStorage();
       renderProducts();
       renderSaleProducts();
       refreshDashboard();
@@ -2039,7 +2602,7 @@
       }
     }
 
-    function completeSale() {
+    async function completeSale() {
       if (!cart.length) return alert('Add at least one item to complete the sale.');
 
       if (paymentMethodSelect.value === 'Pending Payment' && !customerNameInput.value.trim()) {
@@ -2054,36 +2617,92 @@
       }
 
       const sale = buildSaleObject();
-      sales.push(sale);
+      const session = await getSession();
+      if (!session) return alert('Login required to complete sale.');
 
-      applyStockForSale(sale);
-      syncStorage();
+      try {
+        // 1. Save Sale to Supabase
+        const { error: saleErr } = await _supabase.from('sales').insert({
+          id: sale.id,
+          date: sale.date,
+          items: sale.items,
+          subtotal: sale.subtotal,
+          discount_rate: sale.discountRate,
+          total: sale.total,
+          payment_method: sale.paymentMethod,
+          paid: sale.paid,
+          customer: sale.customer,
+          receipt_number: sale.receiptNumber,
+          order_number: sale.orderNumber,
+          user_id: session.user.id
+        });
+        if (saleErr) throw saleErr;
 
-      renderProducts();
-      renderSaleProducts();
-      renderHistory();
-      refreshDashboard();
-      renderCustomers();
+        // 2. Update stock in Supabase
+        const updates = sale.items.map(it => {
+          const p = products.find(prod => prod.id === it.productId);
+          const newStock = sale.paymentMethod === 'Return Restock'
+            ? (p.stock + it.quantity)
+            : Math.max(0, p.stock - it.quantity);
+          return _supabase.from('products').update({ stock: newStock }).eq('id', it.productId);
+        });
+        await Promise.all(updates.map(u => u.then(res => { if (res.error) throw res.error; })));
 
-      resetCart();
-      viewReceipt(sale.id);
+        // 3. Update local state
+        applyStockForSale(sale);
+        sales.unshift(sale);
 
-      customerNameInput.value = '';
-      customerPhoneInput.value = '';
-      customerAddressInput.value = '';
+        // 4. Update/Sync Counters
+        const c = getCounters();
+        await _supabase.from('counters').upsert({
+          user_id: session.user.id,
+          receipt: c.receipt,
+          order_counter: c.order
+        });
+
+        alert('Sale completed successfully!');
+        resetCart();
+
+        renderProducts();
+        renderSaleProducts();
+        renderHistory();
+        refreshDashboard();
+        renderCustomers();
+
+        viewReceipt(sale.id);
+
+        customerNameInput.value = '';
+        customerPhoneInput.value = '';
+        customerAddressInput.value = '';
+      } catch (err) {
+        console.error('Checkout error:', err);
+        alert('Transaction failed: ' + err.message);
+      }
     }
 
-    function markAsPaid(saleId) {
+    async function markAsPaid(saleId) {
       const sale = sales.find(s => s.id === saleId);
       if (!sale) return;
       if (sale.paymentMethod !== 'Pending Payment') return;
-      sale.paid = true;
-      sale.paidAt = new Date().toISOString();
-      syncStorage();
-      renderHistory();
-      refreshDashboard();
-      renderCustomers();
-      renderReports();
+
+      try {
+        const { error } = await _supabase.from('sales').update({
+          paid: true,
+          paid_at: new Date().toISOString()
+        }).eq('id', saleId);
+        if (error) throw error;
+
+        sale.paid = true;
+        sale.paidAt = new Date().toISOString();
+
+        renderHistory();
+        refreshDashboard();
+        renderCustomers();
+        renderReports();
+      } catch (err) {
+        console.error('Payment update error:', err);
+        alert('Failed to mark as paid: ' + err.message);
+      }
     }
 
     /***********************
@@ -2135,7 +2754,7 @@
 
         <div style="margin-top:14px;display:grid;gap:10px;">
           <div class="summary-row"><span class="muted">Subtotal</span><span>${formatCurrency(sale.subtotal)}</span></div>
-          <div class="summary-row"><span class="muted">Discount (${sale.discountRate}%)</span><span>${formatCurrency(sale.subtotal * (sale.discountRate/100))}</span></div>
+          <div class="summary-row"><span class="muted">Discount (${sale.discountRate}%)</span><span>${formatCurrency(sale.subtotal * (sale.discountRate / 100))}</span></div>
           <div class="summary-row" style="font-size:1.05rem;"><strong>Total</strong><strong>${formatCurrency(sale.total)}</strong></div>
         </div>
       `;
@@ -2207,14 +2826,14 @@
       });
 
       const revenueSales = filtered.filter(x => {
-    if (['Cash','Card','Mobile','Net Payment'].includes(x.paymentMethod)) {
-      return true;
-    }
-    if (x.paymentMethod === 'Pending Payment' && x.paid === true) {
-      return true;
-    }
-    return false;
-  });
+        if (['Cash', 'Card', 'Mobile', 'Net Payment'].includes(x.paymentMethod)) {
+          return true;
+        }
+        if (x.paymentMethod === 'Pending Payment' && x.paid === true) {
+          return true;
+        }
+        return false;
+      });
       const revenue = revenueSales.reduce((sum, x) => sum + Number(x.total || 0), 0);
 
       const counts = {};
@@ -2222,7 +2841,7 @@
         if (sale.paymentMethod === 'Return Restock') return;
         sale.items.forEach(it => counts[it.name] = (counts[it.name] || 0) + Number(it.quantity || 0));
       });
-      const best = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+      const best = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
 
       reportRevenueEl.textContent = formatCurrency(revenue);
       reportCountEl.textContent = String(filtered.length);
@@ -2235,15 +2854,15 @@
     function refreshDashboard() {
       const tKey = todayKey();
       const todays = sales.filter(s => new Date(s.date).toISOString().startsWith(tKey));
-     const revenueSales = todays.filter(s => {
-    if (['Cash','Card','Mobile','Net Payment'].includes(s.paymentMethod)) {
-      return true;
-    }
-    if (s.paymentMethod === 'Pending Payment' && s.paid === true) {
-      return true;
-    }
-    return false;
-  });
+      const revenueSales = todays.filter(s => {
+        if (['Cash', 'Card', 'Mobile', 'Net Payment'].includes(s.paymentMethod)) {
+          return true;
+        }
+        if (s.paymentMethod === 'Pending Payment' && s.paid === true) {
+          return true;
+        }
+        return false;
+      });
       const revenue = revenueSales.reduce((sum, s) => sum + Number(s.total || 0), 0);
 
       dailyRevenue.textContent = formatCurrency(revenue);
@@ -2257,10 +2876,10 @@
         if (sale.paymentMethod === 'Return Restock') return;
         sale.items.forEach(it => saleCounts[it.name] = (saleCounts[it.name] || 0) + Number(it.quantity || 0));
       });
-      const top = Object.entries(saleCounts).sort((a,b)=>b[1]-a[1])[0];
+      const top = Object.entries(saleCounts).sort((a, b) => b[1] - a[1])[0];
       topSelling.textContent = top ? `${top[0]} (${top[1]})` : 'None yet';
 
-      const topEntries = Object.entries(saleCounts).sort((a,b)=>b[1]-a[1]).slice(0,4);
+      const topEntries = Object.entries(saleCounts).sort((a, b) => b[1] - a[1]).slice(0, 4);
       topProductsList.innerHTML = topEntries.map(([name, qty]) => `
         <div class="list-item">
           <div>
@@ -2271,7 +2890,7 @@
         </div>
       `).join('') || `<div class="muted" style="padding:14px;">No sales recorded yet.</div>`;
 
-      lowStockAlerts.innerHTML = low.slice(0,4).map(p => `
+      lowStockAlerts.innerHTML = low.slice(0, 4).map(p => `
         <div class="list-item">
           <div>
             <strong>${p.name}</strong>
@@ -2312,8 +2931,8 @@
         map.set(key, cur);
       }
       const arr = [...map.values()];
-      arr.sort((a,b)=>b.transactions-a.transactions);
-      arr.forEach(c => c.sales.sort((a,b)=>new Date(b.date)-new Date(a.date)));
+      arr.sort((a, b) => b.transactions - a.transactions);
+      arr.forEach(c => c.sales.sort((a, b) => new Date(b.date) - new Date(a.date)));
       return arr;
     }
 
@@ -2467,7 +3086,7 @@
      ***********************/
     function exportXlsx(mode) {
       const wb = XLSX.utils.book_new();
-      const stamp = new Date().toISOString().replaceAll(':','-').slice(0,19);
+      const stamp = new Date().toISOString().replaceAll(':', '-').slice(0, 19);
 
       const productsSheet = products.map(p => ({
         id: p.id, name: p.name, brand: p.brand, category: p.category,
@@ -2566,19 +3185,13 @@
     /***********************
      * Boot
      ***********************/
-    function boot() {
-      migrateLegacyIfNeeded();
-      loadState();
-      initializeDates();
-      gateApp();
+    async function boot() {
+      // 1. Initial UI check
+      await gateApp();
 
-      renderProducts();
-      renderSaleProducts();
+      // 2. Local-only UI 
+      initializeDates();
       renderCart();
-      renderHistory();
-      renderReports();
-      refreshDashboard();
-      renderCustomers();
     }
 
     /***********************
@@ -2644,7 +3257,7 @@
       if (!e.target.closest('.autocomplete')) customerACList.classList.remove('active');
       if (!e.target.closest('.profile')) {
         profileMenu.classList.remove('active');
-        profileBtn.setAttribute('aria-expanded','false');
+        profileBtn.setAttribute('aria-expanded', 'false');
       }
     });
 
@@ -2652,7 +3265,7 @@
     closeProductModal.addEventListener('click', closeProductForm);
     cancelProductBtn.addEventListener('click', closeProductForm);
     productForm.addEventListener('submit', saveProduct);
-    productImageInput.addEventListener('change', function() {
+    productImageInput.addEventListener('change', function () {
       const file = this.files[0];
       if (!file) { imagePreview.style.display = 'none'; return; }
       const reader = new FileReader();
@@ -2706,10 +3319,10 @@
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       try {
-        const u = await loginUser(loginEmail.value, loginPassword.value);
-        localStorage.setItem(LS.session, JSON.stringify({ userId: u.id, email: u.email, loginAt: new Date().toISOString() }));
+        await loginUser(loginEmail.value, loginPassword.value);
+        loginEmail.value = '';
         loginPassword.value = '';
-        gateApp();
+        await gateApp();
         alert('Login successful.');
       } catch (err) {
         alert(err.message || 'Login failed.');
@@ -2724,7 +3337,7 @@
         if (p1.length < 6) throw new Error('Password must be at least 6 characters.');
         if (p1 !== p2) throw new Error('Passwords do not match.');
         await registerUser(signupEmail.value, p1);
-        alert('Account created. Please login.');
+        alert('Account created! Verification email sent (if enabled). You can now login.');
         setAuthTab('login');
         loginEmail.value = signupEmail.value;
         signupPassword.value = '';
@@ -2736,11 +3349,10 @@
 
     logoutBtn.addEventListener('click', logout);
 
-    // Start with login tab
+    // Initial load
     setAuthTab('login');
-
-    // Boot app
     boot();
   </script>
 </body>
+
 </html>
