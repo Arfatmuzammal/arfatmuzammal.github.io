@@ -3166,316 +3166,87 @@ if (prodUpdates.length) await sbUpsert("products", prodUpdates, "id");
   await sbUpsert("sales", [row], "id");
 }
 
-  // ======= Orders (Cloud-synced with UUID user_id) =======
-  
-  async function sbFetchOrders() {
-    if (!supabase || !currentUser) return [];
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("user_id", currentUser.id)
-      .order("order_no", { ascending: false });
-      
-    if (error) throw new Error("Orders fetch: " + sbErrToString(error));
-    return (data || []).map(normalizeOrderRow);
-  }
-  
-  function normalizeOrderRow(r) {
-    return {
-      id: String(r.id),
-      order_no: Math.trunc(safeNum(r.order_no, 0)),
-      created_at: r.created_at || null,
-      updated_at: r.updated_at || null,
-      customer: {
-        name: String(r.customer_name || ""),
-        phone: String(r.customer_phone || ""),
-        address: String(r.customer_address || "")
-      },
-      items: (() => {
-        try { return JSON.parse(r.items_json || "[]"); } catch { return []; }
-      })(),
-      subtotal: safeNum(r.subtotal, 0),
-      status: String(r.status || "pending")
-    };
-  }
-  
-  async function syncOrdersFromCloud() {
-    if (!state.online || !supabase || !currentUser) {
-      console.log("Cannot sync orders: offline or no user");
-      return false;
-    }
-    
-    try {
-      const cloudOrders = await sbFetchOrders();
-      state.orders = cloudOrders;
-      saveOrders(); // Backup to localStorage as cache
-      console.log(`Synced ${state.orders.length} orders from cloud`);
-      return true;
-    } catch(e) {
-      console.error("Order sync error:", e);
-      toast("error", "Order sync failed", e?.message || String(e));
-      return false;
-    }
-  }
-  
-  async function sbUpsertOrder(order) {
-  if (!supabase || !currentUser) throw new Error("Cannot save order: offline or no user");
-  
-  const row = {
-    id: order.id,
-    order_no: order.order_no,
-    user_id: currentUser.id,
-    customer_name: order.customer?.name || "",
-    customer_phone: order.customer?.phone || "",
-    customer_address: order.customer?.address || "",
-    items_json: JSON.stringify(order.items),
-    subtotal: order.subtotal,
-    status: order.status || "pending",
-    date_ms: order.date_ms || Date.now(),  // ADD THIS - provide date_ms value
-    updated_at: new Date().toISOString()
-  };
-  
-  // Add created_at only for new orders
-  if (!order.created_at) {
-    row.created_at = new Date().toISOString();
-  }
-  
-  console.log("Upserting order:", { 
-    id: row.id, 
-    order_no: row.order_no, 
-    status: row.status, 
-    date_ms: row.date_ms 
-  });
-  
-  const { data, error } = await supabase
-    .from("orders")
-    .upsert(row, { onConflict: "id" });
-    
-  if (error) {
-    console.error("Supabase error:", error);
-    throw new Error("Order upsert: " + sbErrToString(error));
-  }
-  
-  return data;
-}
-  
-  async function sbDeleteOrder(orderId) {
-    if (!supabase || !currentUser) throw new Error("Cannot delete order: offline or no user");
-    
-    const { error } = await supabase
-      .from("orders")
-      .delete()
-      .eq("id", orderId)
-      .eq("user_id", currentUser.id);
-      
-    if (error) throw new Error("Order delete: " + sbErrToString(error));
-  }
-  
+  // ======= Orders (local only) =======
   async function saveOrder() {
-    if (!state.orderCart.size) throw new Error("Order cart is empty.");
-    if (!state.online || !supabase) {
-      toast("error", "Cannot save order", "You must be online to save orders.");
-      throw new Error("Offline: cannot save order");
-    }
-    if (!currentUser) throw new Error("Please login first");
-    
-    const date_ms = nowMs();
-    
-    const items = Array.from(state.orderCart.values()).map(l => ({
-      product_id: l.product_id,
-      name: l.name,
-      brand: l.brand,
-      category_name: l.category_name,
-      qty: Math.trunc(safeNum(l.qty, 0)),
-      price: round2(safeNum(l.price, 0))
-    }));
+  if (!state.orderCart.size) throw new Error("Order cart is empty.");
+  
+  const date_ms = nowMs();
+  
+  const items = Array.from(state.orderCart.values()).map(l => ({
+    product_id: l.product_id,
+    name: l.name,
+    brand: l.brand,
+    category_name: l.category_name,
+    qty: Math.trunc(safeNum(l.qty, 0)),
+    price: round2(safeNum(l.price, 0))
+  }));
 
-    const customer = {
-      name: String($("#orderCustName").value || "").trim(),
-      phone: String($("#orderCustPhone").value || "").trim(),
-      address: String($("#orderCustAddress").value || "").trim(),
+  const customer = {
+    name: String($("#orderCustName").value || "").trim(),
+    phone: String($("#orderCustPhone").value || "").trim(),
+    address: String($("#orderCustAddress").value || "").trim(),
+  };
+
+  const totals = calcCartTotals(state.orderCart, 0, 0, 0);
+  
+  let order_no;
+  let id;
+  let isUpdate = false;
+  
+  // CHECK IF WE ARE EDITING AN EXISTING ORDER
+  if (state.editingOrderId) {
+    const existingOrder = state.orders.find(o => o.id === state.editingOrderId);
+    if (existingOrder) {
+      // UPDATE EXISTING ORDER
+      id = existingOrder.id;
+      order_no = existingOrder.order_no;
+      isUpdate = true;
+      
+      // Update the order
+      existingOrder.items = items;
+      existingOrder.customer = customer;
+      existingOrder.subtotal = totals.subtotal;
+      existingOrder.updated_at = new Date().toISOString();
+      existingOrder.date_ms = date_ms;
+      
+      // Save to localStorage
+      saveOrders();
+      
+      toast("success", "Order updated", `Order #${order_no} has been updated.`);
+    } else {
+      state.editingOrderId = null;
+    }
+  }
+  
+  // IF NOT UPDATING, CREATE NEW ORDER
+  if (!isUpdate) {
+    order_no = await nextOrderNo();
+    id = uuid();
+    
+    const order = { 
+      id, 
+      order_no, 
+      created_at: new Date(date_ms).toISOString(), 
+      date_ms, 
+      customer, 
+      items, 
+      subtotal: totals.subtotal 
     };
-
-    const totals = calcCartTotals(state.orderCart, 0, 0, 0);
     
-    let order_no;
-    let id;
-    let isUpdate = false;
-    
-    // CHECK IF WE ARE EDITING AN EXISTING ORDER
-    if (state.editingOrderId) {
-      const existingOrder = state.orders.find(o => o.id === state.editingOrderId);
-      if (existingOrder) {
-        // UPDATE EXISTING ORDER
-        id = existingOrder.id;
-        order_no = existingOrder.order_no;
-        isUpdate = true;
-        
-        // Update the order object
-        existingOrder.items = items;
-        existingOrder.customer = customer;
-        existingOrder.subtotal = totals.subtotal;
-        existingOrder.updated_at = new Date().toISOString();
-        
-        // Save to cloud
-        await sbUpsertOrder(existingOrder);
-        
-        // Update local state
-        const index = state.orders.findIndex(o => o.id === id);
-        if (index !== -1) state.orders[index] = existingOrder;
-        saveOrders();
-        
-        toast("success", "Order updated", `Order #${order_no} has been updated.`);
-      } else {
-        state.editingOrderId = null;
-      }
-    }
-    
-    // IF NOT UPDATING, CREATE NEW ORDER
-    if (!isUpdate) {
-      order_no = await nextOrderNo();
-      id = uuid();
-      
-      const newOrder = { 
-        id, 
-        order_no, 
-        created_at: new Date(date_ms).toISOString(), 
-        updated_at: new Date(date_ms).toISOString(),
-        customer, 
-        items, 
-        subtotal: totals.subtotal,
-        status: "pending"
-      };
-      
-      // Save to cloud FIRST
-      await sbUpsertOrder(newOrder);
-      
-      // Then add to local state
-      state.orders.unshift(newOrder);
-      saveOrders();
-      toast("success", "Order saved", `Order #${order_no} saved to cloud.`);
-    }
-    
-    // Clear cart and reset editing mode
-    state.orderCart.clear();
-    state.editingOrderId = null;
-    $("#orderCustName").value = "";
-    $("#orderCustPhone").value = "";
-    $("#orderCustAddress").value = "";
-    
-    // Re-render
-    renderOrders();
-  }
-  
-  async function deleteOrder(orderId) {
-    const o = state.orders.find(x => x.id === orderId);
-    if (!o) return;
-    
-    try {
-      // Delete from cloud
-      await sbDeleteOrder(orderId);
-      
-      // Delete from local state
-      state.orders = state.orders.filter(x => x.id !== orderId);
-      saveOrders();
-      
-      toast("success", "Order deleted", `Order #${o.order_no} removed from cloud.`);
-      renderSavedOrders();
-    } catch(e) {
-      toast("error", "Delete failed", e?.message || String(e));
-      throw e;
-    }
-  }
-  
-  async function convertOrderToSale(orderId) {
-    const o = state.orders.find(x => x.id === orderId);
-    if (!o) throw new Error("Order not found.");
-
-    // Check stock availability before converting
-    for (const it of o.items) {
-      const product = getProductById(it.product_id);
-      if (product && product.stock < it.qty) {
-        toast("error", "Insufficient Stock", 
-          `${product.name}: Available ${product.stock}, Required ${it.qty}`);
-        throw new Error(`Insufficient stock for ${product.name}`);
-      }
-    }
-
-    const cartMap = new Map();
-    for (const it of o.items) {
-      cartMap.set(it.product_id, { 
-        product_id: it.product_id, 
-        name: it.name, 
-        brand: it.brand, 
-        category_name: it.category_name, 
-        price: it.price, 
-        qty: it.qty 
-      });
-    }
-
-    const payment_method = "Pending Payment";
-    const pending_option = "Payment on next visit";
-    const sale = await createSaleFromCart({
-      cartMap,
-      discountPct: 0,
-      taxPct: 0,
-      payment_method,
-      paidAmount: 0,
-      pending_option,
-      customer: o.customer || {}
-    });
-
-    // Link order number to sale
-    sale.order_no = o.order_no;
-    const s = state.db.sales.find(x => x.id === sale.id);
-    if (s) {
-      s.order_no = o.order_no;
-      s.updated_at = new Date().toISOString();
-      saveLocalDB();
-      const row = { id: s.id, order_no: s.order_no, updated_at: s.updated_at };
-      await sbUpsert("sales", [row], "id");
-    }
-
-    // Delete the order from cloud since it's converted
-    await sbDeleteOrder(orderId);
-    
-    // Remove from local state
-    state.orders = state.orders.filter(x => x.id !== orderId);
+    state.orders.unshift(order);
     saveOrders();
-
-    toast("success", "Converted to sale", `Order #${o.order_no} converted. Receipt #${sale.receipt_no}.`);
-    renderOrders();
-    renderSales();
-    renderDashboard();
-    renderCustomers();
-    renderReports();
+    toast("success", "Order saved", `Order #${order_no} saved locally.`);
   }
   
-  function loadOrderToCart(orderId) {
-    const o = state.orders.find(x => x.id === orderId);
-    if (!o) return;
-    
-    // SET EDITING MODE
-    state.editingOrderId = orderId;
-    
-    state.orderCart.clear();
-    for (const it of o.items) {
-      state.orderCart.set(it.product_id, { 
-        product_id: it.product_id, 
-        name: it.name, 
-        brand: it.brand, 
-        category_name: it.category_name, 
-        price: it.price, 
-        qty: it.qty 
-      });
-    }
-    
-    $("#orderCustName").value = o.customer?.name || "";
-    $("#orderCustPhone").value = o.customer?.phone || "";
-    $("#orderCustAddress").value = o.customer?.address || "";
-    
-    toast("success", "Order loaded", `Order #${o.order_no} loaded to cart. You can edit and save to UPDATE.`);
-    renderOrderCart();
+  // Clear cart and reset editing mode
+  state.orderCart.clear();
+  state.editingOrderId = null;
+  $("#orderCustName").value = "";
+  $("#orderCustPhone").value = "";
+  $("#orderCustAddress").value = "";
+  
+  // Re-render
+  renderOrders();
   // renderOrders function ke end mein yeh call karein:
 populateOrderCustomerDatalist();
 }
