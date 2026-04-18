@@ -6239,61 +6239,49 @@ setupOrderCustomerAutoFill();
 }
 
   // ======= Boot =======
-  async function initApp(){
-  initSupabase();  // ← YEH LINE SABSE PEHLE ADD KARO
+  async function initApp() {
+  initSupabase();  // This will handle auth and initial sync
+  
+  // Wait for supabase to be ready
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
   initTheme();
 
-    state.settings = loadSettings();
-    state.orders = loadOrders();
+  state.settings = loadSettings();
+  state.orders = loadOrders(); // Load from localStorage cache first
 
-    const local = loadLocalDB();
-    if (local) state.db = local;
+  const local = loadLocalDB();
+  if (local) state.db = local;
 
-    bindNav();
-    bindTopbar();
-    bindDashboard();
-    bindSale();
-    bindOrders();
-    bindCustomers();
-    bindSales();
-    bindReports();
-    bindSettings();
-    bindExport();
-    bindProductsListeners();
+  bindNav();
+  bindTopbar();
+  bindDashboard();
+  bindSale();
+  bindOrders();
+  bindCustomers();
+  bindSales();
+  bindReports();
+  bindSettings();
+  bindExport();
+  bindProductsListeners();
 
-    window.addEventListener("online", async () => {
-      state.online = true;
-      setSyncBadge("Online", "ok");
-      await syncPullReplace();
-      renderRoute();
-    });
-    window.addEventListener("offline", () => {
-      state.online = false;
-      setSyncBadge("Offline", "err");
-      toast("warn","Offline","You are offline. Changes cannot be saved.");
-    });
+  window.addEventListener("online", async () => {
+    state.online = true;
+    setSyncBadge("Online", "ok");
+    await syncPullReplace();  // This will also sync orders now
+    renderRoute();
+  });
+  
+  window.addEventListener("offline", () => {
+    state.online = false;
+    setSyncBadge("Offline", "err");
+    toast("warn","Offline","You are offline. Changes cannot be saved.");
+  });
 
-    setSyncBadge(state.online ? "Ready" : "Offline", state.online ? "ok" : "err");
-      const sess = getSession();
-      if (sess){
-        $("#authScreen").style.display = "none";
-        $("#appRoot").style.display = "grid";
-      } else {
-        $("#authScreen").style.display = "flex";
-        $("#appRoot").style.display = "none";
-      }
-
-      const mq = window.matchMedia("(max-width: 1040px)");
-      const upd = () => {
-        $("#menuOpen").style.display = mq.matches ? "inline-flex" : "none";
-        $("#menuClose").style.display = mq.matches ? "inline-flex" : "none";
-      };
-      mq.addEventListener("change", upd);
-      upd();
-
-      setSyncBadge(state.online ? "Ready" : "Offline", state.online ? "ok" : "err");
-      if (sess) setRoute("dashboard");
-  }
+  setSyncBadge(state.online ? "Ready" : "Offline", state.online ? "ok" : "err");
+  
+  // Auth check is handled by initSupabase's onAuthStateChange
+}
 
   // ======= Auth buttons =======
   $("#tabLogin")?.addEventListener("click", () => {
