@@ -1948,12 +1948,13 @@ html, body {
   syncing: false,
 
   db: {
-    categories: [],
-    products: [],
-    sales: [],
-    counters: { receipt: BUSINESS.receiptStart, order: BUSINESS.orderStart },
-    meta: { updatedAtMs: Date.now() }
-  },
+  categories: [],
+  products: [],
+  sales: [],
+  orders: [],   // ✅ add this
+  counters: { receipt: BUSINESS.receiptStart, order: BUSINESS.orderStart },
+  meta: { updatedAtMs: Date.now() }
+},
 
   saleCart: new Map(),
   orderCart: new Map(),
@@ -2365,19 +2366,37 @@ function getCurrentUserId() {
       updated_at: r.updated_at || null
     };
   }
-
+function normalizeOrderRow(r){
+  return {
+    id: String(r.id),
+    user_id: String(r.user_id || ""),
+    order_no: Math.trunc(safeNum(r.order_no, 0)),
+    date_ms: Number(r.date_ms) || 0,
+    status: String(r.status || "pending"),
+    customer: {
+      name: String(r.customer_name || ""),
+      phone: String(r.customer_phone || ""),
+      address: String(r.customer_address || "")
+    },
+    items: Array.isArray(r.items) ? r.items : (typeof r.items === "string" ? JSON.parse(r.items || "[]") : []),
+    subtotal: safeNum(r.subtotal, 0),
+    created_at: r.created_at || null,
+    updated_at: r.updated_at || null
+  };
+}
   async function sbFetchAll(){
   if (!supabase) throw new Error("Supabase not available.");
   if (!currentUser) throw new Error("User not authenticated");
   
   const userId = currentUser.id;
   
-  const [cats, prods, sales, counters] = await Promise.all([
-    supabase.from("categories").select("*").eq("user_id", userId),
-    supabase.from("products").select("*").eq("user_id", userId),
-    supabase.from("sales").select("*").eq("user_id", userId),
-    supabase.from("counters").select("*").eq("user_id", userId),
-  ]);
+  const [cats, prods, sales, orders, counters] = await Promise.all([
+  supabase.from("categories").select("*").eq("user_id", userId),
+  supabase.from("products").select("*").eq("user_id", userId),
+  supabase.from("sales").select("*").eq("user_id", userId),
+  supabase.from("orders").select("*").eq("user_id", userId),
+  supabase.from("counters").select("*").eq("user_id", userId),
+]);
   
   if (cats.error) throw new Error("Categories: " + sbErrToString(cats.error));
   if (prods.error) throw new Error("Products: " + sbErrToString(prods.error));
@@ -2434,11 +2453,21 @@ async function syncPullReplace(){
     }
     
     // Get categories, products, sales
-    const [cats, prods, sales] = await Promise.all([
-      supabase.from("categories").select("*").eq("user_id", currentUser.id),
-      supabase.from("products").select("*").eq("user_id", currentUser.id),
-      supabase.from("sales").select("*").eq("user_id", currentUser.id),
-    ]);
+    // Get categories, products, sales, orders
+const [cats, prods, sales, orders] = await Promise.all([
+  supabase.from("categories").select("*").eq("user_id", currentUser.id),
+  supabase.from("products").select("*").eq("user_id", currentUser.id),
+  supabase.from("sales").select("*").eq("user_id", currentUser.id),
+  supabase.from("orders").select("*").eq("user_id", currentUser.id),
+]);
+
+if (orders.error) throw new Error("Orders: " + sbErrToString(orders.error));
+
+// normalize and set BOTH (so your existing UI works)
+state.db.orders = (orders.data || []).map(normalizeOrderRow);
+state.orders = state.db.orders;        // optional but helpful if you use state.orders for UI
+saveOrders();                          // local cache update      // optional: purani local orders cache hata do
+renderOrders();
     
     if (cats.error) throw new Error("Categories: " + sbErrToString(cats.error));
     if (prods.error) throw new Error("Products: " + sbErrToString(prods.error));
@@ -2657,6 +2686,10 @@ async function resetLocalOnly(){
   state.saleCart.clear();
   state.orderCart.clear();
   state.orders = [];
+  saveOrders(); // will set LS.orders to []
+// OR force remove:
+localStorage.removeItem(LS.orders);
+await supabase.from("orders").delete().eq("user_id", getCurrentUserId());
 
   // Re-load orders/settings from storage
   state.settings = loadSettings();
@@ -2746,6 +2779,10 @@ async function fullWipeCloudAndLocal(){
     state.saleCart.clear();
     state.orderCart.clear();
     state.orders = [];
+    saveOrders(); // will set LS.orders to []
+// OR force remove:
+localStorage.removeItem(LS.orders);
+await supabase.from("orders").delete().eq("user_id", getCurrentUserId());
     state.settings = loadSettings();
 
     // Pull fresh from Supabase
@@ -3169,6 +3206,8 @@ if (prodUpdates.length) await sbUpsert("products", prodUpdates, "id");
   // ======= Orders (local only) =======
   async function saveOrder() {
   if (!state.orderCart.size) throw new Error("Order cart is empty.");
+  if (!currentUser) throw new Error("Please login first");
+if (!state.online || !supabase) throw new Error("You must be online to save orders");
   
   const date_ms = nowMs();
   
@@ -3218,25 +3257,30 @@ if (prodUpdates.length) await sbUpsert("products", prodUpdates, "id");
     }
   }
   
-  // IF NOT UPDATING, CREATE NEW ORDER
-  if (!isUpdate) {
-    order_no = await nextOrderNo();
-    id = uuid();
-    
-    const order = { 
-      id, 
-      order_no, 
-      created_at: new Date(date_ms).toISOString(), 
-      date_ms, 
-      customer, 
-      items, 
-      subtotal: totals.subtotal 
-    };
-    
-    state.orders.unshift(order);
-    saveOrders();
-    toast("success", "Order saved", `Order #${order_no} saved locally.`);
-  }
+  // Decide order_no for insert/update
+if (!isUpdate) {
+  order_no = await nextOrderNo();
+} else {
+  order_no = order_no; // already set from existing order
+}
+
+const row = {
+  id: state.editingOrderId || uuid(),
+  user_id: currentUser.id,
+  order_no: isUpdate ? order_no : order_no, // (order_no is set above)
+  date_ms,
+  status: "pending",
+  customer_name: customer.name,
+  customer_phone: customer.phone,
+  customer_address: customer.address,
+  subtotal: totals.subtotal,
+  items: items,                 // ✅ jsonb column in Supabase
+  updated_at: new Date().toISOString(),
+};
+
+await sbUpsert("orders", [row], "id");
+await syncPullReplace(); // refresh local cache from cloud
+toast("success", isUpdate ? "Order updated" : "Order saved", `Order #${row.order_no} synced.`);
   
   // Clear cart and reset editing mode
   state.orderCart.clear();
@@ -3332,14 +3376,79 @@ function loadOrderToCart(orderId) {
     saveOrders();
 
     toast("success","Converted to sale", `Order #${o.order_no} converted. Receipt #${sale.receipt_no}.`);
+    // ✅ DELETE order from Supabase too (so it disappears on all devices)
+await supabase
+  .from("orders")
+  .delete()
+  .eq("id", orderId)
+  .eq("user_id", currentUser.id);
+
+await syncPullReplace(); // ✅ refresh list from cloud
+renderOrders();          // ✅ re-render UI (optional but recommended)
+// 1) delete order from Supabase
+await supabase
+  .from("orders")
+  .delete()
+  .eq("id", orderId)
+  .eq("user_id", currentUser.id);
+
+// 2) remove from local memory
+state.db.orders = state.db.orders.filter(o => o.id !== orderId);
+state.orders = state.orders.filter(o => o.id !== orderId);
+
+// 3) persist + re-render
+saveOrders();
+renderOrders();
+toast("success", "Converted to sale", `Order removed from orders list.`);
   }
 
-  function deleteOrder(orderId){
-    const o = state.orders.find(x => x.id === orderId);
-    state.orders = state.orders.filter(x => x.id !== orderId);
-    saveOrders();
-    if (o) toast("success", "Order deleted", `Order #${o.order_no} removed.`);
+  async function deleteOrder(orderId) {
+  if (!state.online || !supabase) {
+    toast("error", "Cannot delete", "You must be online to delete orders.");
+    return;
   }
+  if (!currentUser) {
+    toast("error", "Not logged in", "Please login first.");
+    return;
+  }
+  
+  const order = state.db.orders?.find(x => x.id === orderId);
+  if (!order) {
+    toast("error", "Not found", "Order does not exist.");
+    return;
+  }
+  
+  try {
+    // Delete from Supabase cloud
+    const { error } = await supabase
+      .from("orders")
+      .delete()
+      .eq("id", orderId)
+      .eq("user_id", currentUser.id);
+    
+    if (error) throw new Error("Order delete: " + sbErrToString(error));
+    
+    // Delete from local state
+    state.db.orders = (state.db.orders || []).filter(o => o.id !== orderId);
+    state.orders = state.orders.filter(o => o.id !== orderId);
+    
+    // Save to localStorage
+    saveOrders();
+    saveLocalDB();
+    
+    // Refresh from cloud to ensure consistency
+    await syncPullReplace();
+    
+    // Re-render UI
+    renderOrders();
+    
+    toast("success", "Order Deleted", `Order #${order.order_no} removed permanently.`);
+    
+  } catch(e) {
+    console.error(e);
+    toast("error", "Delete failed", e?.message || String(e));
+  }
+}
 
   // ======= Customers derived from sales =======
   function deriveCustomers(){
@@ -4095,9 +4204,9 @@ const catId = orderCatSelect.value || "__all__";
     const list = $("#savedOrdersList");
     list.innerHTML = "";
     const empty = $("#savedOrdersEmpty");
-    empty.style.display = state.orders.length ? "none" : "block";
-
-    for (const o of state.orders){
+    const orders = state.db.orders || [];
+empty.style.display = orders.length ? "none" : "block";
+for (const o of orders){
       const el = document.createElement("div");
       el.className = "item";
       el.innerHTML = `
